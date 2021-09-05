@@ -20,7 +20,6 @@ _log_format = '%(asctime)s, %(levelname)s, %(name)s, %(message)s'
 class TelegramLoggingHandler(logging.StreamHandler):
     def emit(self, record):
         log_entry = self.format(record)
-        print("ку-ку")
         send_message(log_entry)
 
 
@@ -82,9 +81,14 @@ def main():
 
     while True:
         try:
-            homeworks = get_homeworks()
+            homeworks = get_homeworks(current_timestamp)
             logger.info('Список домашек получен')
-            homework = homeworks['homeworks'][0]
+            if homeworks.get('homeworks') == []:
+                logger.info('нету домашних работ')
+                time.sleep(5 * 60)
+                continue
+            else:
+                homework = homeworks['homeworks'][0]
             if homework != last_homework:
                 logger.info('Статус изменился')
                 last_homework = homework
