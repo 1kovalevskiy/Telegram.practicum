@@ -36,6 +36,7 @@ def get_stream_handler():
     stream_handler.setFormatter(logging.Formatter(_log_format))
     return stream_handler
 
+
 def get_telegram_handler():
     telegram_handler = TelegramLoggingHandler()
     telegram_handler.setLevel(logging.ERROR)
