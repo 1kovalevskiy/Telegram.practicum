@@ -95,7 +95,7 @@ def main():
                 verdict = parse_homework_status(homework)
                 response = send_message(verdict)
                 logger.info(response)
-            time.sleep(5 * 60)  # Опрашивать раз в пять минут
+            time.sleep(20 * 60)
 
         except Exception as e:
             logger.error(f'Бот упал с ошибкой: {e}')
