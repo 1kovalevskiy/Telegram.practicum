@@ -31,10 +31,16 @@ def get_file_handler():
 
 
 def get_stream_handler():
-    stream_handler = TelegramLoggingHandler()
-    stream_handler.setLevel(logging.ERROR)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.DEBUG)
     stream_handler.setFormatter(logging.Formatter(_log_format))
     return stream_handler
+
+def get_telegram_handler():
+    telegram_handler = TelegramLoggingHandler()
+    telegram_handler.setLevel(logging.ERROR)
+    telegram_handler.setFormatter(logging.Formatter(_log_format))
+    return telegram_handler
 
 
 def get_logger(name):
@@ -42,6 +48,7 @@ def get_logger(name):
     logger.setLevel(logging.DEBUG)
     logger.addHandler(get_file_handler())
     logger.addHandler(get_stream_handler())
+    logger.addHandler(get_telegram_handler())
     return logger
 
 
@@ -77,6 +84,7 @@ def send_message(message):
 
 def main():
     send_message('Отслеживание домашки работает')
+    logger.debug('Отслеживание запущено')
     current_timestamp = int(time.time())  # noqa
     last_homework = None
 
@@ -86,7 +94,7 @@ def main():
             logger.info('Список домашек получен')
             if homeworks.get('homeworks') == []:
                 logger.info('нету домашних работ')
-                time.sleep(5 * 60)
+                time.sleep(20 * 60)
                 continue
             else:
                 homework = homeworks['homeworks'][0]
@@ -103,6 +111,7 @@ def main():
             time.sleep(5 * 60)
         finally:
             send_message('Отслеживание завершено')
+            logger.debug('Отслеживание завершено')
 
 
 if __name__ == '__main__':
