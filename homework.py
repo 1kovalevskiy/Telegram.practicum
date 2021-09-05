@@ -110,9 +110,9 @@ def main():
         except Exception as e:
             logger.error(f'Бот упал с ошибкой: {e}')
             time.sleep(5 * 60)
-        finally:
-            send_message('Отслеживание завершено')
-            logger.debug('Отслеживание завершено')
+    else:
+        send_message('Отслеживание завершено')
+        logger.debug('Отслеживание завершено')
 
 
 if __name__ == '__main__':
