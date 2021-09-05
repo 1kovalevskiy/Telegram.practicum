@@ -76,6 +76,7 @@ def send_message(message):
 
 
 def main():
+    send_message('Отслеживание домашки работает')
     current_timestamp = int(time.time())  # noqa
     last_homework = None
 
@@ -100,6 +101,8 @@ def main():
         except Exception as e:
             logger.error(f'Бот упал с ошибкой: {e}')
             time.sleep(5 * 60)
+        finally:
+            send_message('Отслеживание завершено')
 
 
 if __name__ == '__main__':
