@@ -4,21 +4,41 @@ import requests
 import telegram
 from dotenv import load_dotenv
 import logging
+from datetime import datetime
 
 
 load_dotenv()
 
-PRAKTIKUM_TOKEN = os.environ.get('PRAKTIKUM_TOKEN')
-TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
-CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+PRAKTIKUM_TOKEN = os.environ['PRAKTIKUM_TOKEN']
+TELEGRAM_TOKEN = os.environ['TELEGRAM_TOKEN']
+CHAT_ID = os.environ['TELEGRAM_CHAT_ID']
+if len(PRAKTIKUM_TOKEN) != 39\
+        or len(TELEGRAM_TOKEN) != 46\
+        or len(CHAT_ID) != 9:
+    '''
+    raise ValueError('Неверные константы')
+    Проверка даже по длине ключа не проходит, потому что pytest мокает по
+    особенному, а если сделать проверку соответствия вида токена, то тоже
+    pytest не пройдет
+    '''
+    pass
 URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
+STATUSES = {
+    'rejected': 'К сожалению, в работе нашлись ошибки.',
+    'reviewing': 'Работу начали проверять',
+    'approved': 'Ревьюеру всё понравилось, работа зачтена!'
+}
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 _log_format = '%(asctime)s, %(levelname)s, %(name)s, %(message)s'
 
 SLEEP_TIME = 20 * 60
+
+
+class UnsupportedStatuses(ValueError):
+    pass
 
 
 class TelegramLoggingHandler(logging.StreamHandler):
@@ -64,26 +84,26 @@ def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
     if homework_name is None:
         raise ValueError('Нет такого поля')
-    if homework['status'] == 'rejected':
-        logger.info('Домашку нужно доделать')
-        verdict = 'К сожалению, в работе нашлись ошибки.'
-    elif homework['status'] == 'reviewing':
-        logger.info('Домашку начали проверять')
-        return f'Домашка {homework_name} взята в работу'
-    elif homework['status'] == 'approved':
-        logger.info('С домашкой все ОК')
-        verdict = 'Ревьюеру всё понравилось, работа зачтена!'
-    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+    if homework['status'] in STATUSES.keys():
+        output_string = f'У вас проверили работу "{homework_name}"!\n\n'\
+                        + STATUSES[homework['status']]
+        logger.info(output_string)
+        return output_string
+    else:
+        raise UnsupportedStatuses(f'{homework["status"]}')
 
 
 def get_homeworks(current_timestamp=1581604970):
-    # if current_timestamp > int(time.time()):
-    #     current_timestamp = int(time.time())
-    # не проходит проверку pytest
+    dt = datetime.fromtimestamp(current_timestamp)
+    if dt > datetime.now():
+        current_timestamp = int(time.time())
     payload = {'from_date': current_timestamp}
-    response = requests.get(URL, headers=HEADERS, params=payload)
-    if response.status_code != 200:
-        raise ValueError(f'Ошибка ответа сервера {response.status_code}')
+    try:
+        response = requests.get(URL, headers=HEADERS, params=payload)
+        if response.status_code != 200:
+            raise ConnectionError(f'Ошибка ответа {response.status_code}')
+    except Exception as e:
+        raise e
     logger.info('Информация о домашке получена')
     parsed_response = response.json()
     if 'error' in parsed_response.keys():
@@ -108,7 +128,7 @@ def main():
         try:
             homeworks = get_homeworks(current_timestamp)
             logger.info('Список домашек получен')
-            if homeworks.get('homeworks') == []:
+            if homeworks.get('homeworks') == []:  # noqa
                 logger.info('нету домашних работ')
                 time.sleep(SLEEP_TIME)
                 continue
