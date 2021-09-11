@@ -119,7 +119,6 @@ def send_message(message):
 
 
 def main():
-    send_message('Отслеживание домашки работает')
     logger.debug('Отслеживание запущено')
     current_timestamp = int(time.time())  # noqa
     last_homework = None
