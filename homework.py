@@ -22,7 +22,7 @@ if len(PRAKTIKUM_TOKEN) != 39\
     pytest не пройдет
     '''
     pass
-URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
+URL = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
 STATUSES = {
     'rejected': 'К сожалению, в работе нашлись ошибки.',
