@@ -2,8 +2,9 @@ import os
 import time
 import requests
 import telegram
-from dotenv import load_dotenv
 import logging
+from dotenv import load_dotenv
+from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
 
@@ -48,7 +49,12 @@ class TelegramLoggingHandler(logging.StreamHandler):
 
 
 def get_file_handler():
-    file_handler = logging.FileHandler("homework.log")
+    file_handler = RotatingFileHandler(
+        "homework.log",
+        maxBytes=10**6,
+        backupCount=5,
+        encoding="UTF-8"
+    )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter(_log_format))
     return file_handler
